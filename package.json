@@ -1,0 +1,59 @@
+{
+  "name": "evalgate",
+  "version": "0.1.0",
+  "description": "Prompt/agent regression CI - the build fails when your prompt gets dumber.",
+  "keywords": [
+    "eval",
+    "evals",
+    "llm",
+    "prompt",
+    "regression",
+    "ci",
+    "github-action",
+    "scorer",
+    "testing"
+  ],
+  "license": "MIT",
+  "author": "royalpinto007",
+  "type": "module",
+  "bin": {
+    "evalgate": "./dist/cli/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "action.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint . --ext .ts",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "yaml": "^2.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.0",
+    "@typescript-eslint/parser": "^7.13.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.5.2",
+    "vitest": "^1.6.0"
+  }
+}

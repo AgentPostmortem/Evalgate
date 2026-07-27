@@ -128,6 +128,8 @@ export interface EvalCase {
   scorers: ScorerSpec[];
   /** Arbitrary tags for filtering. */
   tags?: string[];
+  /** Case-level template variables, override suite-level `vars`. */
+  vars?: Record<string, string | number | boolean>;
 }
 
 /** The full suite definition loaded from YAML/JSON. */
@@ -142,6 +144,8 @@ export interface EvalSuite {
   provider?: string;
   /** Global pass threshold in [0, 1] for the aggregate score. */
   threshold?: number;
+  /** Suite-level template variables applied to every case. */
+  vars?: Record<string, string | number | boolean>;
   /** The cases. */
   cases: EvalCase[];
 }

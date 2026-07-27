@@ -9,6 +9,7 @@ import type {
 } from "./types.js";
 import { defaultRegistry, ProviderRegistry } from "./providers/registry.js";
 import { defaultScorerRegistry, ScorerRegistry } from "./scorers/registry.js";
+import { resolveCase } from "./template.js";
 
 /** The result-artifact schema version emitted by the runner. */
 export const RESULT_VERSION = "1";
@@ -49,12 +50,13 @@ export function aggregateScore(scores: ScoreResult[]): number {
 
 /** Execute a single case and produce its {@link CaseResult}. */
 export async function runCase(
-  c: EvalCase,
+  rawCase: EvalCase,
   suite: EvalSuite,
   options: RunOptions = {},
 ): Promise<CaseResult> {
   const providers = options.providers ?? defaultRegistry();
   const scorers = options.scorers ?? defaultScorerRegistry();
+  const c = resolveCase(rawCase, suite.vars);
 
   const providerName =
     c.provider ?? suite.provider ?? options.defaultProvider ?? "mock";

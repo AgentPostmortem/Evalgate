@@ -57,8 +57,16 @@ export function validateSuite(data: unknown): EvalSuite {
     model: typeof d.model === "string" ? d.model : undefined,
     provider: typeof d.provider === "string" ? d.provider : undefined,
     threshold: typeof d.threshold === "number" ? d.threshold : undefined,
+    vars: isVars(d.vars) ? d.vars : undefined,
     cases,
   };
+}
+
+function isVars(v: unknown): v is Record<string, string | number | boolean> {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return false;
+  return Object.values(v as Record<string, unknown>).every(
+    (x) => typeof x === "string" || typeof x === "number" || typeof x === "boolean",
+  );
 }
 
 function validateCase(data: unknown, index: number, ids: Set<string>): EvalCase {
@@ -91,6 +99,7 @@ function validateCase(data: unknown, index: number, ids: Set<string>): EvalCase 
     expected: typeof c.expected === "string" ? c.expected : undefined,
     scorers,
     tags: Array.isArray(c.tags) ? (c.tags as string[]).map(String) : undefined,
+    vars: isVars(c.vars) ? c.vars : undefined,
   };
 }
 

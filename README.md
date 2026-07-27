@@ -200,8 +200,11 @@ evalgate run <suite>          Run a suite and print a report.
 evalgate baseline <suite>     Run a suite and save it as a baseline.
 evalgate compare <suite>      Run a suite and compare it to a baseline.
 evalgate compare             Compare two existing result files (--base, --head).
+evalgate init [file]          Write a starter suite you can edit.
+evalgate list                 List the available scorers and providers.
 
-Flags: --provider --model --tags --out --md --json --tolerance --comment --no-fail
+Flags: --provider --model --tags --concurrency --out --md --junit --json
+       --tolerance --comment --no-fail
 ```
 
 ## Library

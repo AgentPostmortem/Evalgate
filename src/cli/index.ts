@@ -8,6 +8,7 @@ import { compareRuns } from "../compare.js";
 import { renderRunTerminal, renderCompareTerminal } from "../reporters/terminal.js";
 import { renderRunMarkdown, renderCompareMarkdown } from "../reporters/markdown.js";
 import { defaultRegistry } from "../providers/registry.js";
+import { defaultScorerRegistry } from "../scorers/registry.js";
 import { MockProvider } from "../providers/mock.js";
 import { contextFromEnv, upsertComment } from "../github.js";
 import type { RunResult } from "../types.js";
@@ -29,6 +30,8 @@ Usage:
   evalgate baseline <suite>       Run a suite and save it as a baseline.
   evalgate compare <suite>        Run a suite and compare it to a baseline.
   evalgate compare               Compare two existing result files.
+  evalgate init [file]            Write a starter suite you can edit.
+  evalgate list                   List the available scorers and providers.
 
 Common flags:
   --provider <name>     Override the provider (default: mock).
@@ -148,6 +151,44 @@ async function cmdCompare(args: ParsedArgs): Promise<number> {
   return cmp.regressed && !boolFlag(args, "no-fail") ? 1 : 0;
 }
 
+function cmdList(): number {
+  const scorers = defaultScorerRegistry().list().sort();
+  console.log("Registered scorers:");
+  for (const s of scorers) console.log(`  - ${s}`);
+  console.log("\nRegistered providers: mock, openai, anthropic, groq, openrouter");
+  return 0;
+}
+
+const STARTER_SUITE = `name: my-suite
+description: A starter evalgate suite. Runs on the mock provider with no API key.
+provider: mock
+model: mock
+threshold: 0.9
+cases:
+  - id: hello
+    input:
+      prompt: |
+        Reply with the greeting.
+        exactly: Hello, world!
+    expected: "Hello, world!"
+    scorers:
+      - type: exact-match
+      - type: latency
+        budgetMs: 500
+`;
+
+async function cmdInit(args: ParsedArgs): Promise<number> {
+  const out = args._[0] ?? strFlag(args, "out") ?? "my-suite.eval.yaml";
+  await writeFile(out, STARTER_SUITE, { encoding: "utf8", flag: "wx" }).catch((err) => {
+    if ((err as NodeJS.ErrnoException).code === "EEXIST") {
+      throw new Error(`refusing to overwrite existing file ${out}`);
+    }
+    throw err;
+  });
+  console.log(`Wrote starter suite -> ${out}\nRun it with: evalgate run ${out}`);
+  return 0;
+}
+
 async function main(): Promise<number> {
   const argv = process.argv.slice(2);
   const args = parseArgs(argv);
@@ -169,6 +210,10 @@ async function main(): Promise<number> {
       return cmdBaseline(args);
     case "compare":
       return cmdCompare(args);
+    case "list":
+      return cmdList();
+    case "init":
+      return cmdInit(args);
     default:
       console.error(`[evalgate] unknown command "${command}"\n`);
       console.log(HELP);

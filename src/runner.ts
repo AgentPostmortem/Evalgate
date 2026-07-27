@@ -46,10 +46,10 @@ async function mapPool<T, R>(
   let next = 0;
   const size = Math.max(1, Math.min(limit, items.length || 1));
   const workers = Array.from({ length: size }, async () => {
-    while (true) {
-      const i = next++;
-      if (i >= items.length) return;
+    let i = next++;
+    while (i < items.length) {
       results[i] = await fn(items[i]!, i);
+      i = next++;
     }
   });
   await Promise.all(workers);

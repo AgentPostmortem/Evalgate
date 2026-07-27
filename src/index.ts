@@ -20,3 +20,11 @@ export { validate as validateJsonSchema } from "./scorers/json-schema.js";
 
 export { renderRunTerminal, renderCompareTerminal } from "./reporters/terminal.js";
 export { renderRunMarkdown, renderCompareMarkdown } from "./reporters/markdown.js";
+
+export {
+  contextFromEnv,
+  upsertComment,
+  findExistingComment,
+  COMMENT_MARKER,
+  type GitHubContext,
+} from "./github.js";

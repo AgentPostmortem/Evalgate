@@ -28,6 +28,32 @@ export interface RunOptions {
   filterTags?: string[];
   /** Optional callback fired after each case completes (for progress UIs). */
   onCase?: (result: CaseResult) => void;
+  /**
+   * Maximum number of cases to execute at once. Defaults to 1 (sequential),
+   * which keeps mock runs perfectly ordered and reproducible. Increase it to
+   * parallelize slow network-bound providers.
+   */
+  concurrency?: number;
+}
+
+/** Run tasks with a bounded worker pool, preserving input order in the output. */
+async function mapPool<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T, index: number) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let next = 0;
+  const size = Math.max(1, Math.min(limit, items.length || 1));
+  const workers = Array.from({ length: size }, async () => {
+    while (true) {
+      const i = next++;
+      if (i >= items.length) return;
+      results[i] = await fn(items[i]!, i);
+    }
+  });
+  await Promise.all(workers);
+  return results;
 }
 
 /** Turn a case into a provider request. */
@@ -103,12 +129,12 @@ export async function runSuite(suite: EvalSuite, options: RunOptions = {}): Prom
     cases = cases.filter((c) => (c.tags ?? []).some((t) => wanted.has(t)));
   }
 
-  const caseResults: CaseResult[] = [];
-  for (const c of cases) {
+  const concurrency = options.concurrency ?? 1;
+  const caseResults = await mapPool(cases, concurrency, async (c) => {
     const res = await runCase(c, suite, { ...options, providers, scorers });
-    caseResults.push(res);
     options.onCase?.(res);
-  }
+    return res;
+  });
 
   const total = caseResults.length;
   const passedCount = caseResults.filter((r) => r.passed).length;

@@ -73,6 +73,7 @@ async function cmdRun(args: ParsedArgs): Promise<number> {
     providers: registryFor(args),
     defaultProvider: strFlag(args, "provider"),
     defaultModel: strFlag(args, "model"),
+    concurrency: numFlag(args, "concurrency", 1),
     filterTags: strFlag(args, "tags")?.split(",").map((s) => s.trim()).filter(Boolean),
   });
 

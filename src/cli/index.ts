@@ -1,0 +1,183 @@
+#!/usr/bin/env node
+import { readFile, writeFile } from "node:fs/promises";
+import { createRequire } from "node:module";
+import { parseArgs, strFlag, boolFlag, numFlag, type ParsedArgs } from "./args.js";
+import { loadSuite } from "../suite.js";
+import { runSuite } from "../runner.js";
+import { compareRuns } from "../compare.js";
+import { renderRunTerminal, renderCompareTerminal } from "../reporters/terminal.js";
+import { renderRunMarkdown, renderCompareMarkdown } from "../reporters/markdown.js";
+import { defaultRegistry } from "../providers/registry.js";
+import { MockProvider } from "../providers/mock.js";
+import { contextFromEnv, upsertComment } from "../github.js";
+import type { RunResult } from "../types.js";
+
+const require = createRequire(import.meta.url);
+
+function version(): string {
+  try {
+    return require("../../package.json").version ?? "0.0.0";
+  } catch {
+    return "0.0.0";
+  }
+}
+
+const HELP = `evalgate - the build fails when your prompt gets dumber.
+
+Usage:
+  evalgate run <suite>            Run a suite and print a report.
+  evalgate baseline <suite>       Run a suite and save it as a baseline.
+  evalgate compare <suite>        Run a suite and compare it to a baseline.
+  evalgate compare               Compare two existing result files.
+
+Common flags:
+  --provider <name>     Override the provider (default: mock).
+  --model <name>        Override the model.
+  --tags <a,b>          Only run cases with one of these tags.
+  --out <file>          Write the JSON result artifact here.
+  --md <file>           Write a Markdown report here.
+  --json                Print the JSON result to stdout.
+  --no-fail             Do not exit non-zero on failure/regression.
+
+compare flags:
+  --base <file>         Baseline result JSON (required for compare).
+  --head <file>         Candidate result JSON (skips running the suite).
+  --tolerance <n>       Allowed score drop before it counts as a regression.
+  --comment             Upsert a PR comment via the GitHub API (needs token).
+
+Other:
+  --version, -v         Print version.
+  --help, -h            Print this help.
+`;
+
+/** Build a provider registry, allowing a --degrade toggle for the mock. */
+function registryFor(args: ParsedArgs) {
+  const degrade = boolFlag(args, "degrade");
+  const registry = defaultRegistry(process.env);
+  if (degrade) registry.register("mock", () => new MockProvider({ degrade: true }));
+  return registry;
+}
+
+async function writeArtifacts(args: ParsedArgs, run: RunResult): Promise<void> {
+  const out = strFlag(args, "out");
+  if (out) await writeFile(out, JSON.stringify(run, null, 2) + "\n", "utf8");
+  const md = strFlag(args, "md");
+  if (md) await writeFile(md, renderRunMarkdown(run) + "\n", "utf8");
+}
+
+async function cmdRun(args: ParsedArgs): Promise<number> {
+  const suitePath = args._[0];
+  if (!suitePath) throw new Error("run requires a suite path");
+  const suite = await loadSuite(suitePath);
+  const run = await runSuite(suite, {
+    providers: registryFor(args),
+    defaultProvider: strFlag(args, "provider"),
+    defaultModel: strFlag(args, "model"),
+    filterTags: strFlag(args, "tags")?.split(",").map((s) => s.trim()).filter(Boolean),
+  });
+
+  if (boolFlag(args, "json")) console.log(JSON.stringify(run, null, 2));
+  else console.log(renderRunTerminal(run));
+  await writeArtifacts(args, run);
+
+  return run.passed || boolFlag(args, "no-fail") ? 0 : 1;
+}
+
+async function cmdBaseline(args: ParsedArgs): Promise<number> {
+  const suitePath = args._[0];
+  if (!suitePath) throw new Error("baseline requires a suite path");
+  const out = strFlag(args, "out") ?? "evalgate.baseline.json";
+  const suite = await loadSuite(suitePath);
+  const run = await runSuite(suite, {
+    providers: registryFor(args),
+    defaultProvider: strFlag(args, "provider"),
+    defaultModel: strFlag(args, "model"),
+  });
+  await writeFile(out, JSON.stringify(run, null, 2) + "\n", "utf8");
+  console.log(`Saved baseline for "${run.suite}" -> ${out} (mean score ${(run.score * 100).toFixed(1)}%)`);
+  return 0;
+}
+
+async function loadResult(path: string): Promise<RunResult> {
+  return JSON.parse(await readFile(path, "utf8")) as RunResult;
+}
+
+async function cmdCompare(args: ParsedArgs): Promise<number> {
+  const basePath = strFlag(args, "base");
+  if (!basePath) throw new Error("compare requires --base <baseline.json>");
+  const baseline = await loadResult(basePath);
+
+  let head: RunResult;
+  const headPath = strFlag(args, "head");
+  const suitePath = args._[0];
+  if (headPath) {
+    head = await loadResult(headPath);
+  } else if (suitePath) {
+    const suite = await loadSuite(suitePath);
+    head = await runSuite(suite, {
+      providers: registryFor(args),
+      defaultProvider: strFlag(args, "provider"),
+      defaultModel: strFlag(args, "model"),
+    });
+    const out = strFlag(args, "out");
+    if (out) await writeFile(out, JSON.stringify(head, null, 2) + "\n", "utf8");
+  } else {
+    throw new Error("compare needs either a suite path or --head <result.json>");
+  }
+
+  const cmp = compareRuns(baseline, head, { tolerance: numFlag(args, "tolerance", 0) });
+
+  if (boolFlag(args, "json")) console.log(JSON.stringify(cmp, null, 2));
+  else console.log(renderCompareTerminal(cmp));
+
+  const md = renderCompareMarkdown(cmp, head.suite);
+  const mdOut = strFlag(args, "md");
+  if (mdOut) await writeFile(mdOut, md + "\n", "utf8");
+
+  if (boolFlag(args, "comment")) {
+    const ctx = contextFromEnv(process.env);
+    if (!ctx) {
+      console.error("[evalgate] --comment set but no GitHub PR context found; skipping.");
+    } else {
+      await upsertComment(ctx, md);
+      console.log(`[evalgate] posted report to ${ctx.owner}/${ctx.repo}#${ctx.prNumber}`);
+    }
+  }
+
+  return cmp.regressed && !boolFlag(args, "no-fail") ? 1 : 0;
+}
+
+async function main(): Promise<number> {
+  const argv = process.argv.slice(2);
+  const args = parseArgs(argv);
+
+  if (boolFlag(args, ["version", "v"])) {
+    console.log(version());
+    return 0;
+  }
+  const command = args._.shift();
+  if (!command || boolFlag(args, ["help", "h"]) || command === "help") {
+    console.log(HELP);
+    return 0;
+  }
+
+  switch (command) {
+    case "run":
+      return cmdRun(args);
+    case "baseline":
+      return cmdBaseline(args);
+    case "compare":
+      return cmdCompare(args);
+    default:
+      console.error(`[evalgate] unknown command "${command}"\n`);
+      console.log(HELP);
+      return 2;
+  }
+}
+
+main()
+  .then((code) => process.exit(code))
+  .catch((err) => {
+    console.error((err as Error).message);
+    process.exit(2);
+  });

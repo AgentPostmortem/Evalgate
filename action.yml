@@ -1,0 +1,72 @@
+name: evalgate
+description: Run an eval suite, compare it to a baseline, and fail the build when quality regresses.
+branding:
+  icon: check-circle
+  color: red
+
+inputs:
+  suite:
+    description: Path to the eval suite (YAML or JSON).
+    required: true
+  baseline:
+    description: Path to the baseline result JSON to compare against.
+    required: false
+    default: evalgate.baseline.json
+  provider:
+    description: Provider to run the suite with (default mock, which needs no keys).
+    required: false
+    default: mock
+  model:
+    description: Optional model override.
+    required: false
+    default: ""
+  tolerance:
+    description: Allowed per-case score drop before it counts as a regression.
+    required: false
+    default: "0"
+  comment:
+    description: Whether to upsert a PR comment with the delta table.
+    required: false
+    default: "true"
+  version:
+    description: Version of the evalgate npm package to use.
+    required: false
+    default: latest
+  github-token:
+    description: Token used to post the PR comment.
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+
+    - name: Run evalgate
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        set -euo pipefail
+        MODEL_FLAG=""
+        if [ -n "${{ inputs.model }}" ]; then MODEL_FLAG="--model ${{ inputs.model }}"; fi
+        COMMENT_FLAG=""
+        if [ "${{ inputs.comment }}" = "true" ]; then COMMENT_FLAG="--comment"; fi
+
+        if [ -f "${{ inputs.baseline }}" ]; then
+          npx --yes evalgate@${{ inputs.version }} compare "${{ inputs.suite }}" \
+            --base "${{ inputs.baseline }}" \
+            --provider "${{ inputs.provider }}" \
+            --tolerance "${{ inputs.tolerance }}" \
+            --md evalgate-report.md \
+            $MODEL_FLAG $COMMENT_FLAG
+        else
+          echo "No baseline at ${{ inputs.baseline }}; running the suite without a comparison."
+          npx --yes evalgate@${{ inputs.version }} run "${{ inputs.suite }}" \
+            --provider "${{ inputs.provider }}" \
+            --md evalgate-report.md \
+            $MODEL_FLAG
+        fi

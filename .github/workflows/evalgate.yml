@@ -1,0 +1,25 @@
+# Example: gate every PR on prompt/agent quality.
+# Drop a file like this into any repo that consumes evalgate.
+name: evalgate
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Gate on eval regressions
+        uses: royalpinto007/evalgate@v1
+        with:
+          suite: examples/support-agent.eval.yaml
+          baseline: examples/support-agent.baseline.json
+          provider: mock
+          tolerance: "0.01"
+          comment: "true"

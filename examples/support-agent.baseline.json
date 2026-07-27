@@ -1,0 +1,185 @@
+{
+  "version": "1",
+  "suite": "support-agent",
+  "timestamp": "2026-07-27T09:30:39.018Z",
+  "threshold": 0.9,
+  "score": 0.9422208925361911,
+  "passed": true,
+  "total": 7,
+  "passedCount": 7,
+  "latencyMs": 238,
+  "costUsd": 0.000582,
+  "cases": [
+    {
+      "id": "greeting-exact",
+      "description": "The canned greeting must be returned verbatim.",
+      "model": "mock",
+      "provider": "mock",
+      "output": "Hi there! How can I help you today?",
+      "latencyMs": 46,
+      "costUsd": 0.00007000000000000001,
+      "score": 1,
+      "passed": true,
+      "scores": [
+        {
+          "type": "exact-match",
+          "name": "exact-match",
+          "score": 1,
+          "passed": true,
+          "weight": 1,
+          "reason": "output exactly matched expected"
+        },
+        {
+          "type": "latency",
+          "name": "latency",
+          "score": 1,
+          "passed": true,
+          "weight": 1,
+          "reason": "46ms vs budget 500ms"
+        },
+        {
+          "type": "cost",
+          "name": "cost",
+          "score": 1,
+          "passed": true,
+          "weight": 1,
+          "reason": "$0.000070 vs budget $0.010000"
+        }
+      ]
+    },
+    {
+      "id": "refund-intent-json",
+      "description": "Structured intent output must be valid JSON matching the schema.",
+      "model": "mock",
+      "provider": "mock",
+      "output": "{\"intent\": \"refund\", \"confidence\": 0.94}",
+      "latencyMs": 29,
+      "costUsd": 0.000074,
+      "score": 1,
+      "passed": true,
+      "scores": [
+        {
+          "type": "json-schema",
+          "name": "json-schema",
+          "score": 1,
+          "passed": true,
+          "weight": 1,
+          "reason": "output validates against schema"
+        }
+      ]
+    },
+    {
+      "id": "mentions-policy",
+      "description": "The answer must cite the 30-day policy and avoid banned phrasing.",
+      "model": "mock",
+      "provider": "mock",
+      "output": "You can return any item within 30 days for a full refund.",
+      "latencyMs": 22,
+      "costUsd": 0.00008400000000000001,
+      "score": 1,
+      "passed": true,
+      "scores": [
+        {
+          "type": "contains",
+          "name": "contains",
+          "score": 1,
+          "passed": true,
+          "weight": 2,
+          "reason": "all 2 substring(s) present"
+        },
+        {
+          "type": "not-contains",
+          "name": "not-contains",
+          "score": 1,
+          "passed": true,
+          "weight": 1,
+          "reason": "none of the 2 banned substring(s) present"
+        }
+      ]
+    },
+    {
+      "id": "order-id-format",
+      "description": "The extracted order id must be a 6-digit number.",
+      "model": "mock",
+      "provider": "mock",
+      "output": "481502",
+      "latencyMs": 45,
+      "costUsd": 0.000024,
+      "score": 1,
+      "passed": true,
+      "scores": [
+        {
+          "type": "regex",
+          "name": "regex",
+          "score": 1,
+          "passed": true,
+          "weight": 1,
+          "reason": "pattern /^\\d{6}$/ matched as expected"
+        }
+      ]
+    },
+    {
+      "id": "paraphrase-quality",
+      "description": "A paraphrase should stay semantically close to the reference.",
+      "model": "mock",
+      "provider": "mock",
+      "output": "Your package has shipped and will arrive within three business days.",
+      "latencyMs": 36,
+      "costUsd": 0.000096,
+      "score": 0.8595462477533374,
+      "passed": true,
+      "scores": [
+        {
+          "type": "embedding-similarity",
+          "name": "embedding-similarity",
+          "score": 0.8595462477533374,
+          "passed": true,
+          "weight": 1,
+          "reason": "similarity 0.860 vs threshold 0.6"
+        }
+      ]
+    },
+    {
+      "id": "tone-rubric",
+      "description": "The reply must be polite, actionable, and reference the ticket.",
+      "model": "mock",
+      "provider": "mock",
+      "output": "Thanks for your patience! I have updated ticket 8842 and a specialist will follow up shortly.",
+      "latencyMs": 23,
+      "costUsd": 0.00012,
+      "score": 1,
+      "passed": true,
+      "scores": [
+        {
+          "type": "rubric",
+          "name": "rubric",
+          "score": 1,
+          "passed": true,
+          "weight": 1,
+          "reason": "all 3 rubric criteria met (3/3 pts)"
+        }
+      ]
+    },
+    {
+      "id": "judge-helpfulness",
+      "description": "An LLM judge scores how well the answer matches the reference.",
+      "model": "mock",
+      "provider": "mock",
+      "output": "Your invoice is generated on the first of each month and emailed to your account address.",
+      "latencyMs": 37,
+      "costUsd": 0.000114,
+      "score": 0.736,
+      "passed": true,
+      "scores": [
+        {
+          "type": "llm-judge",
+          "name": "llm-judge",
+          "score": 0.736,
+          "passed": true,
+          "weight": 1,
+          "reason": "mock judge overlap score 0.736"
+        }
+      ]
+    }
+  ]
+}

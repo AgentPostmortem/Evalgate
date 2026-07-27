@@ -1,0 +1,39 @@
+{
+  "name": "summarizer",
+  "description": "A small JSON-format suite showing that summaries stay on-topic and within budget.",
+  "provider": "mock",
+  "model": "mock",
+  "threshold": 0.85,
+  "cases": [
+    {
+      "id": "keeps-key-terms",
+      "description": "The summary must retain the key entities.",
+      "input": {
+        "prompt": "Summarize the release notes.\necho: The 2.0 release adds SSO login, a redesigned dashboard, and faster search."
+      },
+      "scorers": [
+        { "type": "contains", "values": ["SSO", "dashboard", "search"] },
+        { "type": "latency", "budgetMs": 300 }
+      ]
+    },
+    {
+      "id": "no-hallucinated-price",
+      "description": "The summary must not invent pricing claims.",
+      "input": {
+        "prompt": "Summarize the announcement.\necho: We launched a new mobile app for all existing customers."
+      },
+      "scorers": [
+        { "type": "not-contains", "values": ["$", "free trial", "discount"] }
+      ]
+    },
+    {
+      "id": "close-to-reference",
+      "description": "The summary should be semantically close to the gold summary.",
+      "input": {
+        "prompt": "Summarize.\necho: The quarterly report shows revenue growth driven by enterprise customers."
+      },
+      "expected": "Revenue grew this quarter, mainly because of enterprise customers.",
+      "scorers": [{ "type": "embedding-similarity", "threshold": 0.55 }]
+    }
+  ]
+}

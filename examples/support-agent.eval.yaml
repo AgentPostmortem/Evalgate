@@ -1,0 +1,109 @@
+name: support-agent
+description: >
+  A representative eval suite for a customer-support assistant. It exercises most
+  of evalgate's scorers and runs entirely on the deterministic mock provider, so
+  it passes with zero API keys and no network access.
+provider: mock
+model: mock
+threshold: 0.9
+
+cases:
+  - id: greeting-exact
+    description: The canned greeting must be returned verbatim.
+    input:
+      prompt: |
+        You are a support agent. Reply with the standard greeting.
+        exactly: Hi there! How can I help you today?
+    expected: "Hi there! How can I help you today?"
+    scorers:
+      - type: exact-match
+      - type: latency
+        budgetMs: 500
+      - type: cost
+        budgetUsd: 0.01
+
+  - id: refund-intent-json
+    description: Structured intent output must be valid JSON matching the schema.
+    input:
+      prompt: |
+        Extract the intent as JSON with keys intent and confidence.
+        json: {"intent": "refund", "confidence": 0.94}
+    scorers:
+      - type: json-schema
+        schema:
+          type: object
+          required: [intent, confidence]
+          properties:
+            intent:
+              type: string
+              enum: [refund, cancel, upgrade, question]
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 1
+          additionalProperties: false
+
+  - id: mentions-policy
+    description: The answer must cite the 30-day policy and avoid banned phrasing.
+    input:
+      prompt: |
+        Explain the return policy to the customer.
+        echo: You can return any item within 30 days for a full refund.
+    scorers:
+      - type: contains
+        values: ["30 days", "refund"]
+        weight: 2
+      - type: not-contains
+        values: ["no refunds", "final sale"]
+
+  - id: order-id-format
+    description: The extracted order id must be a 6-digit number.
+    input:
+      prompt: |
+        Return only the order id.
+        echo: 481502
+    scorers:
+      - type: regex
+        pattern: "^\\d{6}$"
+
+  - id: paraphrase-quality
+    description: A paraphrase should stay semantically close to the reference.
+    input:
+      prompt: |
+        Paraphrase the shipping update for the customer.
+        echo: Your package has shipped and will arrive within three business days.
+    expected: "Your order is on its way and should arrive in about three business days."
+    scorers:
+      - type: embedding-similarity
+        threshold: 0.6
+
+  - id: tone-rubric
+    description: The reply must be polite, actionable, and reference the ticket.
+    input:
+      prompt: |
+        Write a closing message for ticket 8842.
+        echo: Thanks for your patience! I have updated ticket 8842 and a specialist will follow up shortly.
+    scorers:
+      - type: rubric
+        threshold: 0.75
+        criteria:
+          - description: Is polite
+            anyOf: ["thanks", "thank you", "appreciate", "patience"]
+          - description: References the ticket number
+            pattern: "8842"
+          - description: Promises a next step
+            anyOf: ["follow up", "get back", "specialist", "shortly"]
+
+  - id: judge-helpfulness
+    description: An LLM judge scores how well the answer matches the reference.
+    input:
+      prompt: |
+        Answer the billing question helpfully.
+        echo: Your invoice is generated on the first of each month and emailed to your account address.
+    expected: "Your invoice is generated on the first of each month and emailed to your account address."
+    scorers:
+      - type: llm-judge
+        threshold: 0.6
+        criteria: >
+          The response should clearly explain when invoices are generated and where
+          they are sent.

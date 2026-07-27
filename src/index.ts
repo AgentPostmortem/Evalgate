@@ -20,6 +20,8 @@ export { validate as validateJsonSchema } from "./scorers/json-schema.js";
 
 export { renderRunTerminal, renderCompareTerminal } from "./reporters/terminal.js";
 export { renderRunMarkdown, renderCompareMarkdown } from "./reporters/markdown.js";
+export { renderRunJUnit } from "./reporters/junit.js";
+export { renderTemplate, resolveCase, type Vars } from "./template.js";
 
 export {
   contextFromEnv,

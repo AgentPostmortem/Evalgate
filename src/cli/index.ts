@@ -7,6 +7,7 @@ import { runSuite } from "../runner.js";
 import { compareRuns } from "../compare.js";
 import { renderRunTerminal, renderCompareTerminal } from "../reporters/terminal.js";
 import { renderRunMarkdown, renderCompareMarkdown } from "../reporters/markdown.js";
+import { renderRunJUnit } from "../reporters/junit.js";
 import { defaultRegistry } from "../providers/registry.js";
 import { defaultScorerRegistry } from "../scorers/registry.js";
 import { MockProvider } from "../providers/mock.js";
@@ -66,6 +67,8 @@ async function writeArtifacts(args: ParsedArgs, run: RunResult): Promise<void> {
   if (out) await writeFile(out, JSON.stringify(run, null, 2) + "\n", "utf8");
   const md = strFlag(args, "md");
   if (md) await writeFile(md, renderRunMarkdown(run) + "\n", "utf8");
+  const junit = strFlag(args, "junit");
+  if (junit) await writeFile(junit, renderRunJUnit(run) + "\n", "utf8");
 }
 
 async function cmdRun(args: ParsedArgs): Promise<number> {

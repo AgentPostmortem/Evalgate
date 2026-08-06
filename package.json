@@ -1,6 +1,6 @@
 {
-  "name": "@AgentPostmortem/evalgate",
-  "version": "0.1.0",
+  "name": "@royalpinto007/evalgate",
+  "version": "0.1.1",
   "description": "Prompt/agent regression CI - the build fails when your prompt gets dumber.",
   "keywords": [
     "eval",
@@ -55,5 +55,13 @@
     "eslint": "^8.57.0",
     "typescript": "^5.5.2",
     "vitest": "^1.6.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AgentPostmortem/Evalgate.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AgentPostmortem/Evalgate/issues"
+  },
+  "homepage": "https://github.com/AgentPostmortem/Evalgate#readme"
 }

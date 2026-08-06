@@ -39,7 +39,7 @@ evalgate treats quality like a build artifact:
 ## Quickstart
 
 ```bash
-npm install -D evalgate        # or: npm install -g @AgentPostmortem/evalgate
+npm install -D evalgate        # or: npm install -g @royalpinto007/evalgate
 ```
 
 Write a suite (`suite.eval.yaml`):
@@ -64,21 +64,21 @@ cases:
 Run it:
 
 ```bash
-npx @AgentPostmortem/evalgate run suite.eval.yaml
+npx @royalpinto007/evalgate run suite.eval.yaml
 ```
 
 Save a baseline, then compare later runs against it:
 
 ```bash
-npx @AgentPostmortem/evalgate baseline suite.eval.yaml --out baseline.json
-npx @AgentPostmortem/evalgate compare suite.eval.yaml --base baseline.json --tolerance 0.01
+npx @royalpinto007/evalgate baseline suite.eval.yaml --out baseline.json
+npx @royalpinto007/evalgate compare suite.eval.yaml --base baseline.json --tolerance 0.01
 ```
 
 `compare` exits non-zero when any case regresses beyond the tolerance - that is what
 fails your CI job.
 
 > Try it right now on the bundled example:
-> `npx @AgentPostmortem/evalgate run examples/support-agent.eval.yaml`
+> `npx @royalpinto007/evalgate run examples/support-agent.eval.yaml`
 
 ---
 

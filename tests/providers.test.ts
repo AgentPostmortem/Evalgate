@@ -68,4 +68,18 @@ describe("ProviderRegistry", () => {
     expect(reg.has("openai")).toBe(true);
     expect(reg.has("anthropic")).toBe(true);
   });
+  it("lists built-in and custom providers", () => {
+  const reg = defaultRegistry({});
+  
+  expect(reg.list().sort()).toEqual([
+    "anthropic",
+    "groq",
+    "mock",
+    "openai",
+    "openrouter",
+  ]);
+  
+  reg.register("custom", () => new MockProvider());
+  expect(reg.list()).toContain("custom");
+});
 });

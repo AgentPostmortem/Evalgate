@@ -107,6 +107,15 @@ describe("json-schema", () => {
     );
     expect(errs.length).toBe(2);
   });
+  it("fails cleanly when a schema pattern is invalid", async () => {
+    const r = await run(
+      jsonSchemaScorer,
+      { type: "json-schema", schema: { type: "string", pattern: "[a-z" } },
+      ctx('"abc"'),
+    );
+    expect(r.passed).toBe(false);
+    expect(r.reason).toContain("invalid pattern");
+  });
 });
 
 describe("embedding-similarity", () => {

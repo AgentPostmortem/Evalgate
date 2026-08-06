@@ -29,9 +29,12 @@ export function result(
 }
 
 /** Normalize text for lenient comparisons (trim + collapse whitespace). */
-export function normalize(text: string, opts: { caseSensitive?: boolean; trim?: boolean } = {}): string {
+export function normalize(
+  text: string,
+  opts: { caseSensitive?: boolean; trim?: boolean; collapseWhitespace?: boolean } = {},
+): string {
   let out = text;
   if (opts.trim !== false) out = out.trim();
   if (!opts.caseSensitive) out = out.toLowerCase();
-  return out.replace(/\s+/g, " ");
+  return opts.collapseWhitespace === false ? out : out.replace(/\s+/g, " ");
 }

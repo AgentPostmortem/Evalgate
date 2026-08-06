@@ -109,7 +109,7 @@ score is the weighted mean of the scorer scores.
 
 | Scorer | Passes when | Key options |
 | --- | --- | --- |
-| `exact-match` | output equals `expected` | `expected`, `caseSensitive`, `trim` |
+| `exact-match` | output equals `expected` | `expected`, `caseSensitive`, `trim`, `collapseWhitespace` |
 | `regex` | output matches a pattern | `pattern`, `flags`, `expectMatch` |
 | `contains` | all substrings present (partial credit) | `value` / `values`, `caseSensitive` |
 | `not-contains` | no banned substring present | `value` / `values`, `caseSensitive` |

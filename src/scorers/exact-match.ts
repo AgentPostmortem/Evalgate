@@ -9,6 +9,7 @@ import { normalize, result } from "./util.js";
  *  - `expected`: the value to match (falls back to `case.expected`)
  *  - `caseSensitive`: default false
  *  - `trim`: default true
+ *  - `collapseWhitespace`: default true
  */
 export const exactMatchScorer: Scorer = {
   type: "exact-match",
@@ -23,8 +24,9 @@ export const exactMatchScorer: Scorer = {
     }
     const caseSensitive = spec.caseSensitive === true;
     const trim = spec.trim !== false;
-    const a = normalize(ctx.output, { caseSensitive, trim });
-    const b = normalize(expected, { caseSensitive, trim });
+    const collapseWhitespace = spec.collapseWhitespace !== false;
+    const a = normalize(ctx.output, { caseSensitive, trim, collapseWhitespace });
+    const b = normalize(expected, { caseSensitive, trim, collapseWhitespace });
     const passed = a === b;
     return result(spec, {
       score: passed ? 1 : 0,

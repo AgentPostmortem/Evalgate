@@ -49,6 +49,28 @@ describe("exact-match", () => {
     const r = await run(exactMatchScorer, { type: "exact-match" }, ctx("yes", {}, { expected: "yes" }));
     expect(r.passed).toBe(true);
   });
+  it("collapses internal whitespace by default", async () => {
+    const r = await run(
+      exactMatchScorer,
+      { type: "exact-match", expected: "hello world" },
+      ctx("hello\n\nworld"),
+    );
+    expect(r.passed).toBe(true);
+  });
+  it("keeps internal whitespace when collapseWhitespace is false", async () => {
+    const r = await run(
+      exactMatchScorer,
+      {
+        type: "exact-match",
+        expected: "hello\nworld",
+        caseSensitive: true,
+        trim: false,
+        collapseWhitespace: false,
+      },
+      ctx("hello world"),
+    );
+    expect(r.passed).toBe(false);
+  });
 });
 
 describe("regex", () => {

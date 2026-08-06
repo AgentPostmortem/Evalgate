@@ -3,7 +3,7 @@
 **The build fails when your prompt gets dumber.**
 
 [![CI](https://github.com/AgentPostmortem/evalgate/actions/workflows/ci.yml/badge.svg)](https://github.com/AgentPostmortem/evalgate/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/evalgate.svg)](https://www.npmjs.com/package/evalgate)
+[![npm version](https://img.shields.io/npm/v/@royalpinto007/evalgate.svg)](https://www.npmjs.com/package/@royalpinto007/evalgate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](package.json)
 
@@ -36,10 +36,12 @@ evalgate treats quality like a build artifact:
 
 ---
 
+**npm:** https://www.npmjs.com/package/@royalpinto007/evalgate
+
 ## Quickstart
 
 ```bash
-npm install -D evalgate        # or: npm install -g @royalpinto007/evalgate
+npm install -D @royalpinto007/evalgate   # or: npm install -g @royalpinto007/evalgate
 ```
 
 Write a suite (`suite.eval.yaml`):

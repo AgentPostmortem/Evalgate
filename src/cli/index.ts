@@ -40,7 +40,10 @@ Common flags:
   --tags <a,b>          Only run cases with one of these tags.
   --out <file>          Write the JSON result artifact here.
   --md <file>           Write a Markdown report here.
+  --junit <file>        Write a JUnit XML report here.
   --json                Print the JSON result to stdout.
+  --concurrency <n>     Run cases concurrently (default: 1).
+  --degrade             Make the mock provider return degraded output.
   --no-fail             Do not exit non-zero on failure/regression.
 
 compare flags:

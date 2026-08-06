@@ -204,8 +204,11 @@ evalgate init [file]          Write a starter suite you can edit.
 evalgate list                 List the available scorers and providers.
 
 Flags: --provider --model --tags --concurrency --out --md --junit --json
-       --tolerance --comment --no-fail
+       --degrade --tolerance --comment --no-fail
 ```
+
+Try `evalgate run suite.eval.yaml`, then rerun with `--degrade` to watch the
+exit code flip to 1 when the mock provider returns degraded output.
 
 ## Library
 

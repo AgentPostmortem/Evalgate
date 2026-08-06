@@ -41,6 +41,11 @@ export class ProviderRegistry {
     this.cache.set(name, provider);
     return provider;
   }
+
+  /** List all registered provider names. */
+  list(): string[] {
+    return [...this.factories.keys()];
+  }
 }
 
 /**

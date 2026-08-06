@@ -156,9 +156,13 @@ async function cmdCompare(args: ParsedArgs): Promise<number> {
 
 function cmdList(): number {
   const scorers = defaultScorerRegistry().list().sort();
+  const providers = defaultRegistry(process.env).list().sort();
+
   console.log("Registered scorers:");
   for (const s of scorers) console.log(`  - ${s}`);
-  console.log("\nRegistered providers: mock, openai, anthropic, groq, openrouter");
+
+  console.log("\nRegistered providers:");
+  for (const p of providers) console.log(`  - ${p}`);
   return 0;
 }
 

@@ -117,7 +117,7 @@ export function openrouter(env: NodeJS.ProcessEnv = process.env): OpenAICompatib
     apiKey: env.OPENROUTER_API_KEY,
     defaultModel: "openai/gpt-4o-mini",
     headers: {
-      "http-referer": env.OPENROUTER_REFERER ?? "https://github.com/royalpinto007/evalgate",
+      "http-referer": env.OPENROUTER_REFERER ?? "https://github.com/AgentPostmortem/evalgate",
       "x-title": "evalgate",
     },
     costPer1kTokens: 0.0006,

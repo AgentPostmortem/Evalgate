@@ -2,7 +2,7 @@
 
 **The build fails when your prompt gets dumber.**
 
-[![CI](https://github.com/royalpinto007/evalgate/actions/workflows/ci.yml/badge.svg)](https://github.com/royalpinto007/evalgate/actions/workflows/ci.yml)
+[![CI](https://github.com/AgentPostmortem/evalgate/actions/workflows/ci.yml/badge.svg)](https://github.com/AgentPostmortem/evalgate/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/evalgate.svg)](https://www.npmjs.com/package/evalgate)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](package.json)
@@ -39,7 +39,7 @@ evalgate treats quality like a build artifact:
 ## Quickstart
 
 ```bash
-npm install -D evalgate        # or: npm install -g @royalpinto007/evalgate
+npm install -D evalgate        # or: npm install -g @AgentPostmortem/evalgate
 ```
 
 Write a suite (`suite.eval.yaml`):
@@ -64,21 +64,21 @@ cases:
 Run it:
 
 ```bash
-npx @royalpinto007/evalgate run suite.eval.yaml
+npx @AgentPostmortem/evalgate run suite.eval.yaml
 ```
 
 Save a baseline, then compare later runs against it:
 
 ```bash
-npx @royalpinto007/evalgate baseline suite.eval.yaml --out baseline.json
-npx @royalpinto007/evalgate compare suite.eval.yaml --base baseline.json --tolerance 0.01
+npx @AgentPostmortem/evalgate baseline suite.eval.yaml --out baseline.json
+npx @AgentPostmortem/evalgate compare suite.eval.yaml --base baseline.json --tolerance 0.01
 ```
 
 `compare` exits non-zero when any case regresses beyond the tolerance - that is what
 fails your CI job.
 
 > Try it right now on the bundled example:
-> `npx @royalpinto007/evalgate run examples/support-agent.eval.yaml`
+> `npx @AgentPostmortem/evalgate run examples/support-agent.eval.yaml`
 
 ---
 
@@ -169,7 +169,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: royalpinto007/evalgate@v1
+      - uses: AgentPostmortem/evalgate@v1
         with:
           suite: examples/support-agent.eval.yaml
           baseline: examples/support-agent.baseline.json

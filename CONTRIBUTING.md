@@ -9,7 +9,7 @@ that shapes everything else:
 ## Getting started
 
 ```bash
-git clone https://github.com/royalpinto007/evalgate
+git clone https://github.com/AgentPostmortem/evalgate
 cd evalgate
 npm install
 npm run build

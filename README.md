@@ -171,7 +171,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: AgentPostmortem/evalgate@v1
+      - uses: AgentPostmortem/evalgate@v0
         with:
           suite: examples/support-agent.eval.yaml
           baseline: examples/support-agent.baseline.json

@@ -57,7 +57,7 @@ runs:
         if [ "${{ inputs.comment }}" = "true" ]; then COMMENT_FLAG="--comment"; fi
 
         if [ -f "${{ inputs.baseline }}" ]; then
-          npx --yes evalgate@${{ inputs.version }} compare "${{ inputs.suite }}" \
+          npx --yes @royalpinto007/evalgate@${{ inputs.version }} compare "${{ inputs.suite }}" \
             --base "${{ inputs.baseline }}" \
             --provider "${{ inputs.provider }}" \
             --tolerance "${{ inputs.tolerance }}" \
@@ -65,7 +65,7 @@ runs:
             $MODEL_FLAG $COMMENT_FLAG
         else
           echo "No baseline at ${{ inputs.baseline }}; running the suite without a comparison."
-          npx --yes evalgate@${{ inputs.version }} run "${{ inputs.suite }}" \
+          npx --yes @royalpinto007/evalgate@${{ inputs.version }} run "${{ inputs.suite }}" \
             --provider "${{ inputs.provider }}" \
             --md evalgate-report.md \
             $MODEL_FLAG

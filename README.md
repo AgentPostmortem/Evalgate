@@ -264,3 +264,8 @@ scorer.
 ## License
 
 [MIT](./LICENSE) (c) royalpinto007
+
+
+## Add a copy-paste quickstart to the README
+
+Documentation reference and guidelines for #1.

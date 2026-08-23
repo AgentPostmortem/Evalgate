@@ -49,6 +49,8 @@ Write a suite (`suite.eval.yaml`):
 ```yaml
 name: my-agent
 provider: mock          # works with no API key
+temperature: 0          # deterministic by default; case values override
+maxTokens: 512          # optional output cap; case values override
 threshold: 0.9          # mean score required to pass
 cases:
   - id: greeting
@@ -93,6 +95,8 @@ A suite is YAML or JSON with this shape:
 | `name` | suite | Suite name shown in reports. Required. |
 | `provider` | suite / case | Provider to call (`mock`, `openai`, `anthropic`, `groq`, `openrouter`). |
 | `model` | suite / case | Model id. Case overrides suite. |
+| `temperature` | suite / case | Non-negative sampling temperature. Case overrides suite; default `0`. Provider-specific upper limits still apply. |
+| `maxTokens` | suite / case | Positive integer output-token cap. Case overrides suite; omitted by default. |
 | `threshold` | suite | Mean score in `[0,1]` required for the run to pass. |
 | `cases[].id` | case | Unique id. Required. |
 | `cases[].input.prompt` | case | A single-string prompt. |

@@ -57,12 +57,14 @@ async function mapPool<T, R>(
 }
 
 /** Turn a case into a provider request. */
-function toRequest(c: EvalCase, model: string): ProviderRequest {
+function toRequest(c: EvalCase, suite: EvalSuite, model: string): ProviderRequest {
   return {
     model,
     prompt: c.input.prompt,
     messages: c.input.messages,
-    temperature: 0,
+    // Deterministic regression runs remain the default when neither level opts in.
+    temperature: c.temperature ?? suite.temperature ?? 0,
+    maxTokens: c.maxTokens ?? suite.maxTokens,
   };
 }
 
@@ -89,7 +91,7 @@ export async function runCase(
   const model = c.model ?? suite.model ?? options.defaultModel ?? "mock";
   const provider: Provider = providers.get(providerName);
 
-  const response = await provider.complete(toRequest(c, model));
+  const response = await provider.complete(toRequest(c, suite, model));
 
   const scoreResults: ScoreResult[] = [];
   for (const spec of c.scorers) {

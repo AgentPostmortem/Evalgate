@@ -107,6 +107,29 @@ describe("json-schema", () => {
     );
     expect(errs.length).toBe(2);
   });
+  it("returns a path-attributed failure for an invalid nested pattern", async () => {
+    const r = await run(
+      jsonSchemaScorer,
+      {
+        type: "json-schema",
+        schema: {
+          type: "object",
+          properties: { account: { type: "string", pattern: "[0-9" } },
+        },
+      },
+      ctx('{"account":"123"}'),
+    );
+
+    expect(r.passed).toBe(false);
+    expect(r.score).toBe(0);
+    expect(r.reason).toContain("$.account: invalid pattern [0-9");
+    expect(r.reason).toMatch(/unterminated/i);
+  });
+  it("still reports a normal mismatch for a valid pattern", () => {
+    expect(validate("abc", { type: "string", pattern: "^\\d+$" })).toEqual([
+      "$: does not match pattern ^\\d+$",
+    ]);
+  });
 });
 
 describe("embedding-similarity", () => {

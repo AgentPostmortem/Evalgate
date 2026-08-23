@@ -56,8 +56,15 @@ export function validate(value: unknown, schema: JsonSchema, path = "$"): string
       errors.push(`${path}: shorter than minLength ${schema.minLength}`);
     if (schema.maxLength !== undefined && value.length > schema.maxLength)
       errors.push(`${path}: longer than maxLength ${schema.maxLength}`);
-    if (schema.pattern && !new RegExp(schema.pattern).test(value))
-      errors.push(`${path}: does not match pattern ${schema.pattern}`);
+    if (schema.pattern) {
+      try {
+        if (!new RegExp(schema.pattern).test(value))
+          errors.push(`${path}: does not match pattern ${schema.pattern}`);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        errors.push(`${path}: invalid pattern ${schema.pattern}: ${message}`);
+      }
+    }
   }
 
   if (isPlainObject(value)) {

@@ -170,3 +170,14 @@ describe("rubric", () => {
     expect(r.passed).toBe(true);
   });
 });
+
+describe("exact-match trim:false preserves internal whitespace", () => {
+  it("matches when internal spaces are identical", async () => {
+    const r = await run(exactMatchScorer, { type: "exact-match", expected: "a  b", trim: false }, ctx("a  b"));
+    expect(r.passed).toBe(true);
+  });
+  it("fails when internal whitespace differs", async () => {
+    const r = await run(exactMatchScorer, { type: "exact-match", expected: "a  b", trim: false }, ctx("a b"));
+    expect(r.passed).toBe(false);
+  });
+});

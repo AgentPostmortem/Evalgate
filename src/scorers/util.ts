@@ -28,10 +28,15 @@ export function result(
   };
 }
 
-/** Normalize text for lenient comparisons (trim + collapse whitespace). */
+/** Normalize text for lenient comparisons.
+ * When `trim` is true (default): strip ends and collapse internal whitespace.
+ * When `trim` is false: leave whitespace untouched (only case folding may apply).
+ */
 export function normalize(text: string, opts: { caseSensitive?: boolean; trim?: boolean } = {}): string {
   let out = text;
-  if (opts.trim !== false) out = out.trim();
+  if (opts.trim !== false) {
+    out = out.trim().replace(/\s+/g, " ");
+  }
   if (!opts.caseSensitive) out = out.toLowerCase();
-  return out.replace(/\s+/g, " ");
+  return out;
 }

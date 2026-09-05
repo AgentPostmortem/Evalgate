@@ -1,6 +1,6 @@
 {
   "name": "@royalpinto007/evalgate",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Prompt/agent regression CI - the build fails when your prompt gets dumber.",
   "keywords": [
     "eval",

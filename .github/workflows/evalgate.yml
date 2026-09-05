@@ -16,10 +16,15 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Gate on eval regressions
-        uses: AgentPostmortem/evalgate@v0
-        with:
-          suite: examples/support-agent.eval.yaml
-          baseline: examples/support-agent.baseline.json
-          provider: mock
-          tolerance: "0.01"
-          comment: "true"
+        # Run the CLI from source so the gate always exercises the code on
+        # this branch, including unreviewed fixes (npx would pin the npm
+        # release, which lags main).
+        run: |
+          npm ci
+          npm run build
+          GITHUB_TOKEN="${{ github.token }}" node dist/cli/index.js compare \
+            examples/support-agent.eval.yaml \
+            --base examples/support-agent.baseline.json \
+            --provider mock \
+            --tolerance 0.01 \
+            --comment

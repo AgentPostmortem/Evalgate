@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [0.1.2] - 2026-09-05
+
+### Fixed
+
+- A failed PR comment (for example HTTP 403 on a fork PR with a read-only
+  token) now logs a warning and keeps the comparison verdict instead of
+  failing the gate with exit 2. The comment is reporting, not the verdict
+  (#24, #31).
+
 ## [0.1.1] - 2026-08-06
 
 ### Changed

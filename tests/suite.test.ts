@@ -28,6 +28,28 @@ cases:
     expect(suite.cases[0]!.id).toBe("a");
   });
 
+  it("parses suite and case sampling options", () => {
+    const suite = parseSuite(`
+name: sampling
+temperature: 0.2
+maxTokens: 512
+cases:
+  - id: creative
+    temperature: 0.7
+    maxTokens: 64
+    input:
+      prompt: write something
+    scorers:
+      - type: regex
+        pattern: .+
+`, "sampling.yaml");
+
+    expect(suite.temperature).toBe(0.2);
+    expect(suite.maxTokens).toBe(512);
+    expect(suite.cases[0]!.temperature).toBe(0.7);
+    expect(suite.cases[0]!.maxTokens).toBe(64);
+  });
+
   it("rejects a suite without a name", () => {
     expect(() => validateSuite({ cases: [] })).toThrow(SuiteValidationError);
   });
@@ -58,5 +80,39 @@ cases:
         cases: [{ id: "x", input: { prompt: "a" }, scorers: [{ type: "regex" }] }],
       }),
     ).toThrow(/threshold/);
+  });
+
+  it.each([
+    ["temperature", -0.1],
+    ["temperature", Number.POSITIVE_INFINITY],
+    ["maxTokens", 0],
+    ["maxTokens", 1.5],
+  ])("rejects invalid suite %s", (field, value) => {
+    expect(() =>
+      validateSuite({
+        name: "d",
+        [field]: value,
+        cases: [{ id: "x", input: { prompt: "a" }, scorers: [{ type: "regex" }] }],
+      }),
+    ).toThrow(new RegExp(`suite\\.${field}`));
+  });
+
+  it.each([
+    ["temperature", Number.NaN],
+    ["maxTokens", -1],
+  ])("rejects invalid case %s", (field, value) => {
+    expect(() =>
+      validateSuite({
+        name: "d",
+        cases: [
+          {
+            id: "x",
+            [field]: value,
+            input: { prompt: "a" },
+            scorers: [{ type: "regex" }],
+          },
+        ],
+      }),
+    ).toThrow(new RegExp(`case "x"\\.${field}`));
   });
 });

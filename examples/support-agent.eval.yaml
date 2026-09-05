@@ -5,6 +5,8 @@ description: >
   it passes with zero API keys and no network access.
 provider: mock
 model: mock
+temperature: 0
+maxTokens: 512
 threshold: 0.9
 
 cases:
@@ -79,6 +81,8 @@ cases:
 
   - id: tone-rubric
     description: The reply must be polite, actionable, and reference the ticket.
+    temperature: 0.4
+    maxTokens: 128
     input:
       prompt: |
         Write a closing message for ticket 8842.

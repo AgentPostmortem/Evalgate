@@ -47,6 +47,7 @@ export function validateSuite(data: unknown): EvalSuite {
       "suite.threshold must be a number in [0, 1]",
     );
   }
+  validateSamplingOptions(d, "suite");
 
   const ids = new Set<string>();
   const cases = (d.cases as unknown[]).map((c, i) => validateCase(c, i, ids));
@@ -56,6 +57,8 @@ export function validateSuite(data: unknown): EvalSuite {
     description: typeof d.description === "string" ? d.description : undefined,
     model: typeof d.model === "string" ? d.model : undefined,
     provider: typeof d.provider === "string" ? d.provider : undefined,
+    temperature: typeof d.temperature === "number" ? d.temperature : undefined,
+    maxTokens: typeof d.maxTokens === "number" ? d.maxTokens : undefined,
     threshold: typeof d.threshold === "number" ? d.threshold : undefined,
     vars: isVars(d.vars) ? d.vars : undefined,
     cases,
@@ -67,6 +70,25 @@ function isVars(v: unknown): v is Record<string, string | number | boolean> {
   return Object.values(v as Record<string, unknown>).every(
     (x) => typeof x === "string" || typeof x === "number" || typeof x === "boolean",
   );
+}
+
+function validateSamplingOptions(data: Record<string, unknown>, label: string): void {
+  if (data.temperature !== undefined) {
+    assert(
+      typeof data.temperature === "number" &&
+        Number.isFinite(data.temperature) &&
+        data.temperature >= 0,
+      `${label}.temperature must be a non-negative finite number`,
+    );
+  }
+  if (data.maxTokens !== undefined) {
+    assert(
+      typeof data.maxTokens === "number" &&
+        Number.isInteger(data.maxTokens) &&
+        data.maxTokens > 0,
+      `${label}.maxTokens must be a positive integer`,
+    );
+  }
 }
 
 function validateCase(data: unknown, index: number, ids: Set<string>): EvalCase {
@@ -86,6 +108,7 @@ function validateCase(data: unknown, index: number, ids: Set<string>): EvalCase 
   assert(Array.isArray(c.scorers), `case "${c.id}" requires a scorers array`);
   assert((c.scorers as unknown[]).length > 0, `case "${c.id}" needs at least one scorer`);
   const scorers = (c.scorers as unknown[]).map((s, i) => validateScorer(s, c.id as string, i));
+  validateSamplingOptions(c, `case "${c.id}"`);
 
   return {
     id: c.id,
@@ -96,6 +119,8 @@ function validateCase(data: unknown, index: number, ids: Set<string>): EvalCase 
     },
     model: typeof c.model === "string" ? c.model : undefined,
     provider: typeof c.provider === "string" ? c.provider : undefined,
+    temperature: typeof c.temperature === "number" ? c.temperature : undefined,
+    maxTokens: typeof c.maxTokens === "number" ? c.maxTokens : undefined,
     expected: typeof c.expected === "string" ? c.expected : undefined,
     scorers,
     tags: Array.isArray(c.tags) ? (c.tags as string[]).map(String) : undefined,

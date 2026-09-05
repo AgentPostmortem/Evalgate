@@ -122,6 +122,10 @@ export interface EvalCase {
   model?: string;
   /** Optional per-case provider override. */
   provider?: string;
+  /** Optional per-case sampling temperature override. */
+  temperature?: number;
+  /** Optional per-case output token cap override. */
+  maxTokens?: number;
   /** Optional expected value, shared by many scorers. */
   expected?: string;
   /** One or more scorers applied to the output. */
@@ -142,6 +146,10 @@ export interface EvalSuite {
   model?: string;
   /** Default provider applied to cases that do not override it. */
   provider?: string;
+  /** Default sampling temperature applied to cases that do not override it. */
+  temperature?: number;
+  /** Default output token cap applied to cases that do not override it. */
+  maxTokens?: number;
   /** Global pass threshold in [0, 1] for the aggregate score. */
   threshold?: number;
   /** Suite-level template variables applied to every case. */

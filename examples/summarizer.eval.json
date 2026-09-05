@@ -3,6 +3,8 @@
   "description": "A small JSON-format suite showing that summaries stay on-topic and within budget.",
   "provider": "mock",
   "model": "mock",
+  "temperature": 0,
+  "maxTokens": 256,
   "threshold": 0.85,
   "cases": [
     {
@@ -29,6 +31,7 @@
     {
       "id": "close-to-reference",
       "description": "The summary should be semantically close to the gold summary.",
+      "maxTokens": 128,
       "input": {
         "prompt": "Summarize.\necho: The quarterly report shows revenue growth driven by enterprise customers."
       },

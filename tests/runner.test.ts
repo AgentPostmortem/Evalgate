@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
-import type { EvalSuite } from "../src/types.js";
+import type { EvalSuite, ProviderRequest } from "../src/types.js";
 import { runSuite, runCase, aggregateScore } from "../src/runner.js";
+import { ProviderRegistry } from "../src/providers/registry.js";
 
 const suite: EvalSuite = {
   name: "unit",
@@ -88,5 +89,40 @@ describe("runCase", () => {
     );
     expect(res.provider).toBe("mock");
     expect(res.passed).toBe(true);
+  });
+
+  it("resolves case, suite, and default sampling options", async () => {
+    const requests: ProviderRequest[] = [];
+    const providers = new ProviderRegistry().register("capture", () => ({
+      name: "capture",
+      async complete(request) {
+        requests.push(request);
+        return { output: "y", latencyMs: 0, model: request.model };
+      },
+    }));
+    const samplingSuite: EvalSuite = {
+      name: "sampling",
+      provider: "capture",
+      model: "capture-model",
+      temperature: 0.2,
+      maxTokens: 128,
+      cases: [],
+    };
+    const baseCase = {
+      id: "x",
+      input: { prompt: "exactly: y" },
+      expected: "y",
+      scorers: [{ type: "exact-match" }],
+    };
+
+    await runCase({ ...baseCase, temperature: 0.7, maxTokens: 64 }, samplingSuite, { providers });
+    await runCase(baseCase, samplingSuite, { providers });
+    await runCase(baseCase, { ...samplingSuite, temperature: undefined, maxTokens: undefined }, { providers });
+
+    expect(requests.map(({ temperature, maxTokens }) => ({ temperature, maxTokens }))).toEqual([
+      { temperature: 0.7, maxTokens: 64 },
+      { temperature: 0.2, maxTokens: 128 },
+      { temperature: 0, maxTokens: undefined },
+    ]);
   });
 });

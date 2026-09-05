@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 import { readFile, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
+import { resolve } from "node:path";
 import { parseArgs, strFlag, boolFlag, numFlag, type ParsedArgs } from "./args.js";
 import { loadSuite } from "../suite.js";
 import { runSuite } from "../runner.js";
@@ -109,7 +111,7 @@ async function loadResult(path: string): Promise<RunResult> {
   return JSON.parse(await readFile(path, "utf8")) as RunResult;
 }
 
-async function cmdCompare(args: ParsedArgs): Promise<number> {
+export async function cmdCompare(args: ParsedArgs): Promise<number> {
   const basePath = strFlag(args, "base");
   if (!basePath) throw new Error("compare requires --base <baseline.json>");
   const baseline = await loadResult(basePath);
@@ -146,8 +148,15 @@ async function cmdCompare(args: ParsedArgs): Promise<number> {
     if (!ctx) {
       console.error("[evalgate] --comment set but no GitHub PR context found; skipping.");
     } else {
-      await upsertComment(ctx, md);
-      console.log(`[evalgate] posted report to ${ctx.owner}/${ctx.repo}#${ctx.prNumber}`);
+      try {
+        await upsertComment(ctx, md);
+        console.log(`[evalgate] posted report to ${ctx.owner}/${ctx.repo}#${ctx.prNumber}`);
+      } catch (err) {
+        // Reporting is a side-effect: a failure (e.g. read-only fork token, HTTP 403)
+        // must not turn a passing comparison into a failed gate.
+        const status = err instanceof Error ? err.message : String(err);
+        console.error(`[evalgate] warning: could not post PR comment; skipping. (${status})`);
+      }
     }
   }
 
@@ -228,9 +237,16 @@ async function main(): Promise<number> {
   }
 }
 
-main()
-  .then((code) => process.exit(code))
-  .catch((err) => {
-    console.error((err as Error).message);
-    process.exit(2);
-  });
+// Run the CLI only when this module is the entry point, so importing it in
+// tests does not execute main() against the test runner's argv.
+const invoked = process.argv[1]
+  ? import.meta.url === pathToFileURL(resolve(process.argv[1])).href
+  : false;
+if (invoked) {
+  main()
+    .then((code) => process.exit(code))
+    .catch((err) => {
+      console.error((err as Error).message);
+      process.exit(2);
+    });
+}

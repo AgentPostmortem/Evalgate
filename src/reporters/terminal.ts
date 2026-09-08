@@ -18,6 +18,9 @@ export function renderRunTerminal(run: RunResult): string {
   lines.push(bold(`\nevalgate - ${run.suite}`));
   lines.push(dim(`${run.timestamp}`));
   lines.push("");
+  if (run.total === 0) {
+    lines.push(red("No cases matched the filter."));
+  }
 
   for (const cse of run.cases) {
     const mark = cse.passed ? green("PASS") : red("FAIL");

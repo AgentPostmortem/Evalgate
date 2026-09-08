@@ -63,6 +63,13 @@ describe("runSuite", () => {
     expect(res.cases[0]!.id).toBe("ok");
   });
 
+  it("fails when tag filtering selects no cases", async () => {
+    const suiteWithoutThreshold: EvalSuite = { ...suite, threshold: undefined };
+    const res = await runSuite(suiteWithoutThreshold, { filterTags: ["does-not-exist"] });
+    expect(res.total).toBe(0);
+    expect(res.passed).toBe(false);
+  });
+
   it("fires the onCase callback per case", async () => {
     const seen: string[] = [];
     await runSuite(suite, { onCase: (c) => seen.push(c.id) });

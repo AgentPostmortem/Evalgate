@@ -146,7 +146,8 @@ export async function runSuite(suite: EvalSuite, options: RunOptions = {}): Prom
   const costUsd = caseResults.reduce((s, r) => s + r.costUsd, 0);
 
   const thresholdMet = suite.threshold === undefined || meanScore >= suite.threshold;
-  const passed = thresholdMet && passedCount === total;
+  // A filtered run with no cases must fail instead of silently disabling the gate.
+  const passed = total > 0 && thresholdMet && passedCount === total;
 
   return {
     version: RESULT_VERSION,

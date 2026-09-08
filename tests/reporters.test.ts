@@ -34,6 +34,11 @@ describe("reporters", () => {
     expect(md).toContain("| Case | Base | Head | Delta | Change |");
   });
 
+  it("terminal reports explain when filtering selected no cases", async () => {
+    const run = await runSuite(suite, { filterTags: ["does-not-exist"] });
+    expect(renderRunTerminal(run)).toContain("No cases matched the filter");
+  });
+
   it("terminal reports render without throwing", async () => {
     const run = await runSuite(suite);
     expect(renderRunTerminal(run)).toContain("evalgate");

@@ -4,6 +4,7 @@ import { regexScorer } from "./regex.js";
 import { containsScorer, notContainsScorer } from "./contains.js";
 import { jsonSchemaScorer } from "./json-schema.js";
 import { toolCallScorer } from "./tool-call.js";
+import { jsonNonemptyScorer } from "./json-nonempty.js";
 import { embeddingSimilarityScorer } from "./embedding-similarity.js";
 import { llmJudgeScorer } from "./llm-judge.js";
 import { latencyScorer } from "./latency.js";
@@ -49,6 +50,7 @@ export const builtinScorers: Scorer[] = [
   notContainsScorer,
   jsonSchemaScorer,
   toolCallScorer,
+  jsonNonemptyScorer,
   embeddingSimilarityScorer,
   llmJudgeScorer,
   latencyScorer,

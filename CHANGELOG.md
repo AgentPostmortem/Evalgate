@@ -10,6 +10,12 @@ All notable changes to this project are documented here. The format is based on
 
 - New `word-count` scorer: scores output length against `minWords`/`maxWords`
   (and/or char) bounds with full credit inside and linear falloff outside.
+- New `tool-call` scorer: passes when the output is a JSON tool call whose
+  `name` is on the allowlist and whose `arguments` is a plain object, with
+  optional per-tool argument schemas (`allowedTools`, `schemas`).
+- New `json-nonempty` scorer: fails schema-valid-but-empty outputs (`{}`,
+  `{"answer": ""}`, all-null payloads) unless the output has at least one
+  non-empty leaf value (`minKeys`, `rejectBlankStrings`, `rejectNulls`).
 
 ## [0.1.2] - 2026-09-05
 

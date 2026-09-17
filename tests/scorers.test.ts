@@ -13,6 +13,7 @@ import { llmJudgeScorer } from "../src/scorers/llm-judge.js";
 import { latencyScorer } from "../src/scorers/latency.js";
 import { costScorer } from "../src/scorers/cost.js";
 import { rubricScorer } from "../src/scorers/rubric.js";
+import { wordCountScorer } from "../src/scorers/word-count.js";
 
 const provider = new MockProvider();
 
@@ -479,5 +480,58 @@ describe("exact-match trim:false preserves internal whitespace", () => {
   it("fails when internal whitespace differs", async () => {
     const r = await run(exactMatchScorer, { type: "exact-match", expected: "a  b", trim: false }, ctx("a b"));
     expect(r.passed).toBe(false);
+  });
+});
+
+describe("word-count", () => {
+  it("fails a terse answer below minWords with partial credit", async () => {
+    const words = "Paris is a lovely city located in the heart of Europe on the river Seine."
+      .split(/\s+/).length;
+    expect(words).toBeGreaterThanOrEqual(5); // 15+ words, ensure the test stays meaningful
+    void words;
+    const r = await run(
+      wordCountScorer,
+      { type: "word-count", minWords: 5 },
+      ctx("Paris"),
+    );
+    expect(r.passed).toBe(false);
+    expect(r.score).toBeLessThan(1);
+    expect(r.score).toBeGreaterThan(0);
+  });
+
+  it("passes with full credit inside the bounds", async () => {
+    const r = await run(
+      wordCountScorer,
+      { type: "word-count", minWords: 5, maxWords: 100 },
+      ctx("the quick brown fox jumps over the lazy dog next week"),
+    );
+    expect(r.passed).toBe(true);
+    expect(r.score).toBe(1);
+  });
+
+  it("fails above maxWords with partial credit", async () => {
+    const long = Array.from({ length: 60 }, (_, i) => `word${i}`).join(" ");
+    const r = await run(
+      wordCountScorer,
+      { type: "word-count", maxWords: 50 },
+      ctx(long),
+    );
+    expect(r.passed).toBe(false);
+    expect(r.score).toBeLessThan(1);
+  });
+
+  it("enforces char bounds", async () => {
+    const r = await run(
+      wordCountScorer,
+      { type: "word-count", maxChars: 20 },
+      ctx("this sentence is far too long for a twenty character budget"),
+    );
+    expect(r.passed).toBe(false);
+  });
+
+  it("fails when no bounds are configured", async () => {
+    const r = await run(wordCountScorer, { type: "word-count" }, ctx("hello world"));
+    expect(r.passed).toBe(false);
+    expect(r.reason).toMatch(/required/);
   });
 });

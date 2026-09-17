@@ -11,6 +11,7 @@ import { llmJudgeScorer } from "./llm-judge.js";
 import { latencyScorer } from "./latency.js";
 import { costScorer } from "./cost.js";
 import { rubricScorer } from "./rubric.js";
+import { wordCountScorer } from "./word-count.js";
 
 /** A registry mapping scorer ids to their implementations. */
 export class ScorerRegistry {
@@ -58,6 +59,7 @@ export const builtinScorers: Scorer[] = [
   latencyScorer,
   costScorer,
   rubricScorer,
+  wordCountScorer,
 ];
 
 /** Build a registry preloaded with every built-in scorer. */

@@ -5,7 +5,9 @@ import { exactMatchScorer } from "../src/scorers/exact-match.js";
 import { regexScorer } from "../src/scorers/regex.js";
 import { containsScorer, notContainsScorer } from "../src/scorers/contains.js";
 import { jsonSchemaScorer, validate } from "../src/scorers/json-schema.js";
+import { toolCallScorer } from "../src/scorers/tool-call.js";
 import { refusalScorer } from "../src/scorers/refusal.js";
+import { jsonNonemptyScorer } from "../src/scorers/json-nonempty.js";
 import { embeddingSimilarityScorer, cosineSimilarity } from "../src/scorers/embedding-similarity.js";
 import { llmJudgeScorer } from "../src/scorers/llm-judge.js";
 import { latencyScorer } from "../src/scorers/latency.js";
@@ -134,6 +136,140 @@ describe("json-schema", () => {
     expect(validate("abc", { type: "string", pattern: "^\\d+$" })).toEqual([
       "$: does not match pattern ^\\d+$",
     ]);
+  });
+});
+
+describe("json-nonempty", () => {
+  it("fails a schema-valid but empty object before any leaf values", async () => {
+    const r = await run(
+      jsonNonemptyScorer,
+      { type: "json-nonempty", schema: { type: "object" }, minKeys: 1 },
+      ctx("{}"),
+    );
+    expect(r.passed).toBe(false);
+  });
+
+  it("fails blank-string and all-null outputs", async () => {
+    const blank = await run(
+      jsonNonemptyScorer,
+      { type: "json-nonempty" },
+      ctx('{"answer": ""}'),
+    );
+    expect(blank.passed).toBe(false);
+
+    const nulls = await run(
+      jsonNonemptyScorer,
+      { type: "json-nonempty" },
+      ctx('{"answer": null, "extra": null}'),
+    );
+    expect(nulls.passed).toBe(false);
+  });
+
+  it("passes an output with at least one non-empty leaf value", async () => {
+    const r = await run(
+      jsonNonemptyScorer,
+      { type: "json-nonempty" },
+      ctx('{"answer": "Paris"}'),
+    );
+    expect(r.passed).toBe(true);
+    expect(r.score).toBe(1);
+  });
+
+  it("honors minKeys over the default of 1", async () => {
+    const r = await run(
+      jsonNonemptyScorer,
+      { type: "json-nonempty", minKeys: 2 },
+      ctx('{"a": "one", "b": ""}'),
+    );
+    expect(r.passed).toBe(false);
+  });
+
+  it("fails non-JSON output with a parse reason", async () => {
+    const r = await run(
+      jsonNonemptyScorer,
+      { type: "json-nonempty" },
+      ctx("{not json"),
+    );
+    expect(r.passed).toBe(false);
+    expect(r.reason).toMatch(/not valid JSON/i);
+  });
+
+  it("fails before emptiness checks when the schema rejects the output", async () => {
+    const r = await run(
+      jsonNonemptyScorer,
+      { type: "json-nonempty", schema: { type: "object", required: ["n"] } },
+      ctx('{"answer": "Paris"}'),
+    );
+    expect(r.passed).toBe(false);
+    expect(r.reason).toContain("required");
+  });
+});
+
+describe("tool-call", () => {
+  it("passes a tool call on the allowlist", async () => {
+    const r = await run(
+      toolCallScorer,
+      { type: "tool-call", allowedTools: ["get_weather"] },
+      ctx('{"name": "get_weather", "arguments": {"city": "London"}}'),
+    );
+    expect(r.passed).toBe(true);
+    expect(r.score).toBe(1);
+  });
+
+  it("fails a tool call not on the allowlist", async () => {
+    const r = await run(
+      toolCallScorer,
+      { type: "tool-call", allowedTools: ["get_weather"] },
+      ctx('{"name": "rm_rf", "arguments": {}}'),
+    );
+    expect(r.passed).toBe(false);
+    expect(r.reason).toMatch(/not in allowedTools/);
+  });
+
+  it("fails non-JSON output", async () => {
+    const r = await run(
+      toolCallScorer,
+      { type: "tool-call", allowedTools: ["get_weather"] },
+      ctx("{not json"),
+    );
+    expect(r.passed).toBe(false);
+    expect(r.reason).toMatch(/not valid JSON/);
+  });
+
+  it("fails when arguments is not a plain object", async () => {
+    const r = await run(
+      toolCallScorer,
+      { type: "tool-call", allowedTools: ["get_weather"] },
+      ctx('{"name": "get_weather", "arguments": "London"}'),
+    );
+    expect(r.passed).toBe(false);
+    expect(r.reason).toMatch(/plain object/);
+  });
+
+  it("fails when allowedTools is missing", async () => {
+    const r = await run(toolCallScorer, { type: "tool-call" }, ctx('{"name": "get_weather", "arguments": {}}'));
+    expect(r.passed).toBe(false);
+    expect(r.reason).toMatch(/allowedTools/);
+  });
+
+  it("validates arguments against a per-tool schema", async () => {
+    const r = await run(
+      toolCallScorer,
+      {
+        type: "tool-call",
+        allowedTools: ["get_weather"],
+        schemas: {
+          get_weather: {
+            type: "object",
+            required: ["city"],
+            properties: { city: { type: "string" } },
+          },
+        },
+      },
+      ctx('{"name": "get_weather", "arguments": {}}'),
+    );
+    expect(r.passed).toBe(false);
+    expect(r.reason).toContain("required");
   });
 });
 

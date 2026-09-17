@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- New `refusal` scorer: asserts a reply reads as a refusal using a normalized
+  refusal-phrase set, or — inverted with `expectRefuse: false` — that it reads
+  as a direct answer.
+
 ## [0.1.2] - 2026-09-05
 
 ### Fixed

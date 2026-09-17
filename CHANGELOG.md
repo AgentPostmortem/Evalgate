@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/), and this project adheres to
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- New `json-nonempty` scorer: fails schema-valid-but-empty outputs (`{}`,
+  `{"answer": ""}`, all-null payloads) unless the output has at least one
+  non-empty leaf value (`minKeys`, `rejectBlankStrings`, `rejectNulls`).
+
 ## [0.1.2] - 2026-09-05
 
 ### Fixed

@@ -137,6 +137,7 @@ score is the weighted mean of the scorer scores.
 | `not-contains` | no banned substring present | `value` / `values`, `caseSensitive` |
 | `json-schema` | output is valid JSON matching a schema | `schema` |
 | `tool-call` | output is a JSON tool call with a name on the allowlist | `allowedTools`, `schemas` |
+| `refusal` | output reads as a refusal (or a direct answer with `expectRefuse: false`) | `expectRefuse` |
 | `json-nonempty` | output is valid JSON with non-empty leaf values | `schema`, `minKeys`, `rejectBlankStrings`, `rejectNulls` |
 | `embedding-similarity` | cosine similarity >= threshold | `expected`, `threshold` |
 | `llm-judge` | a judge model scores >= threshold | `criteria`, `expected`, `threshold`, `model` |

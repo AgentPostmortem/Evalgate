@@ -141,6 +141,7 @@ score is the weighted mean of the scorer scores.
 | `latency` | call latency within budget | `budgetMs` |
 | `cost` | estimated call cost within budget | `budgetUsd` (provider must set `costPer1kTokens` so `costUsd` is reported) |
 | `rubric` | weighted criteria score >= threshold | `criteria[]`, `threshold` |
+| `word-count` | output length within bounds (linear falloff outside) | `minWords`, `maxWords`, `minChars`, `maxChars` |
 
 Two scorers are pluggable and ship with **deterministic offline fallbacks** so tests and
 the mock provider need no network:

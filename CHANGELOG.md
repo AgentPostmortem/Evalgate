@@ -10,6 +10,9 @@ All notable changes to this project are documented here. The format is based on
 
 - New `word-count` scorer: scores output length against `minWords`/`maxWords`
   (and/or char) bounds with full credit inside and linear falloff outside.
+- New `refusal` scorer: asserts a reply reads as a refusal using a normalized
+  refusal-phrase set, or — inverted with `expectRefuse: false` — that it reads
+  as a direct answer.
 - New `tool-call` scorer: passes when the output is a JSON tool call whose
   `name` is on the allowlist and whose `arguments` is a plain object, with
   optional per-tool argument schemas (`allowedTools`, `schemas`).

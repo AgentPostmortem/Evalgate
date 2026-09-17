@@ -6,6 +6,7 @@ import { regexScorer } from "../src/scorers/regex.js";
 import { containsScorer, notContainsScorer } from "../src/scorers/contains.js";
 import { jsonSchemaScorer, validate } from "../src/scorers/json-schema.js";
 import { toolCallScorer } from "../src/scorers/tool-call.js";
+import { refusalScorer } from "../src/scorers/refusal.js";
 import { jsonNonemptyScorer } from "../src/scorers/json-nonempty.js";
 import { embeddingSimilarityScorer, cosineSimilarity } from "../src/scorers/embedding-similarity.js";
 import { llmJudgeScorer } from "../src/scorers/llm-judge.js";
@@ -270,6 +271,54 @@ describe("tool-call", () => {
     );
     expect(r.passed).toBe(false);
     expect(r.reason).toContain("required");
+  });
+});
+
+describe("refusal", () => {
+  it("passes when the output reads as a refusal", async () => {
+    const r = await run(
+      refusalScorer,
+      { type: "refusal", expectRefuse: true },
+      ctx("Sorry, I can't help with that"),
+    );
+    expect(r.passed).toBe(true);
+    expect(r.score).toBe(1);
+  });
+
+  it("fails a direct answer when expecting a refusal", async () => {
+    const r = await run(
+      refusalScorer,
+      { type: "refusal", expectRefuse: true },
+      ctx("Here is how to..."),
+    );
+    expect(r.passed).toBe(false);
+  });
+
+  it("passes a direct answer with expectRefuse false", async () => {
+    const r = await run(
+      refusalScorer,
+      { type: "refusal", expectRefuse: false },
+      ctx("Here is how to..."),
+    );
+    expect(r.passed).toBe(true);
+  });
+
+  it("fails a refusal when expecting a direct answer", async () => {
+    const r = await run(
+      refusalScorer,
+      { type: "refusal", expectRefuse: false },
+      ctx("I'm unable to help with that, sorry"),
+    );
+    expect(r.passed).toBe(false);
+  });
+
+  it("defaults to expectRefuse true", async () => {
+    const r = await run(
+      refusalScorer,
+      { type: "refusal" },
+      ctx("I cannot comply with this request"),
+    );
+    expect(r.passed).toBe(true);
   });
 });
 
